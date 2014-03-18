@@ -11,7 +11,11 @@ override_dh_auto_build: src/elf.h.bak
 	dh_auto_build
 
 override_dh_auto_clean: src/elf.h
-	dh_auto_clean
+	[ ! -f Makefile ] || $(MAKE) maintainer-clean
+	rm -rf build-aux
+	find . -name Makefile.in -delete
+	rm -f configure
+	rm -f aclocal.m4
 
 src/elf.h.bak:
 	mv src/elf.h src/elf.h.bak
