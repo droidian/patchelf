@@ -1,0 +1,5 @@
+patchelf (0.8-1) unstable; urgency=low
+
+  * Initial release (Closes: #742049)
+
+ -- Felipe Sateler <fsateler@debian.org>  Tue, 18 Mar 2014 12:57:47 -0300
