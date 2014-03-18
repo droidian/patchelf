@@ -6,3 +6,15 @@
 
 %:
 	dh $@  --with autoreconf
+
+override_dh_auto_build: src/elf.h.bak
+	dh_auto_build
+
+override_dh_auto_clean: src/elf.h
+	dh_auto_clean
+
+src/elf.h.bak:
+	mv src/elf.h src/elf.h.bak
+
+src/elf.h:
+	mv src/elf.h.bak src/elf.h
