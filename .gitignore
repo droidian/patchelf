@@ -5,3 +5,6 @@
 /build-aux/
 
 Makefile.in
+
+debian/patches/
+.pc/
