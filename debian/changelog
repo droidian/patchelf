@@ -1,3 +1,11 @@
+patchelf (0.8-2) unstable; urgency=medium
+
+  * Document --remove-needed in manpage
+  * Fix typo in manpage. Closes: #742468
+     Thanks Gianluigi Tiesi
+
+ -- Felipe Sateler <fsateler@debian.org>  Fri, 28 Mar 2014 15:28:41 -0300
+
 patchelf (0.8-1) unstable; urgency=low
 
   * Initial release (Closes: #742049)
