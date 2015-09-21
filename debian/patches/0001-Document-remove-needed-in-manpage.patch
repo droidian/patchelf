@@ -1,0 +1,23 @@
+From: Felipe Sateler <fsateler@debian.org>
+Date: Tue, 18 Mar 2014 15:04:17 -0300
+Subject: Document --remove-needed in manpage
+
+---
+ patchelf.1 | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/patchelf.1 b/patchelf.1
+index 4865256..f5a2aac 100644
+--- a/patchelf.1
++++ b/patchelf.1
+@@ -47,6 +47,10 @@ Prints the RPATH for an executable or library.
+ Forces the use of the obsolete DT_RPATH in the file instead of
+ DT_RUNPATH. By default DT_RPATH is converted to DT_RUNPATH.
+ 
++.IP "--remove-needed LIBRARY"
++Removes a declared depency on LIBRARY (DT_NEEDED entry). This
++option can be given multiple times.
++
+ .IP --debug
+ Prints details of the changes made to the input file.
+ 
