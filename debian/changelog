@@ -1,9 +1,9 @@
-patchelf (0.8-3) UNRELEASED; urgency=medium
+patchelf (0.8-3) unstable; urgency=medium
 
   * Pick upstream commit to use a dynamic page size. Fixes FTBFS on ppc64el.
     Closes: #799880
 
- -- Felipe Sateler <fsateler@debian.org>  Thu, 12 Nov 2015 20:25:01 -0300
+ -- Felipe Sateler <fsateler@debian.org>  Thu, 12 Nov 2015 20:29:11 -0300
 
 patchelf (0.8-2) unstable; urgency=medium
 
