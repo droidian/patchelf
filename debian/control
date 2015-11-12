@@ -12,7 +12,7 @@ Package: patchelf
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: modify properties of ELF executables
- PatchELF is a simple utility for modifing existing ELF executables and
+ PatchELF is a simple utility for modifying existing ELF executables and
  libraries.  In particular, it can do the following:
  .
   * Change the dynamic loader ("ELF interpreter") of executables
