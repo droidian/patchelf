@@ -1,3 +1,4 @@
 0001-Document-remove-needed-in-manpage.patch
 0002-Fix-typo-in-manpage.patch
 0003-Configure-automatically-the-page-size-with-a-runtime.patch
+0004-Disable-no-rpath.sh-test.patch

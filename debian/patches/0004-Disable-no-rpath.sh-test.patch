@@ -1,0 +1,23 @@
+From: Felipe Sateler <fsateler@debian.org>
+Date: Sat, 14 Nov 2015 21:17:26 -0300
+Subject: Disable no-rpath.sh test
+
+Patchelf does not appear to be capable of running on foreign elf binaries,
+so this test can fail when run on other architectures
+---
+ tests/Makefile.am | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tests/Makefile.am b/tests/Makefile.am
+index 9a38df6..8b763dc 100644
+--- a/tests/Makefile.am
++++ b/tests/Makefile.am
+@@ -1,7 +1,7 @@
+ check_PROGRAMS = simple main main-scoped big-dynstr
+ 
+ TESTS = plain-fail.sh plain-run.sh shrink-rpath.sh set-interpreter-short.sh \
+-  set-interpreter-long.sh set-rpath.sh no-rpath.sh big-dynstr.sh \
++  set-interpreter-long.sh set-rpath.sh big-dynstr.sh \
+   set-rpath-library.sh
+ EXTRA_DIST = no-rpath $(TESTS)
+ 
