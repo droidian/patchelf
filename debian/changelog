@@ -1,3 +1,10 @@
+patchelf (0.8-4) unstable; urgency=medium
+
+  * Disable no-rpath.sh test, as it may fail when the binary is of foreign
+    architecture. Really Closes: #799880
+
+ -- Felipe Sateler <fsateler@debian.org>  Sun, 15 Nov 2015 16:05:13 -0300
+
 patchelf (0.8-3) unstable; urgency=medium
 
   * Pick upstream commit to use a dynamic page size. Fixes FTBFS on ppc64el.
