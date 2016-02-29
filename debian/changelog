@@ -1,8 +1,12 @@
-patchelf (0.9-1) UNRELEASED; urgency=medium
+patchelf (0.9-1) unstable; urgency=medium
 
   * New upstream release
+    - Drop all patches, applied upstream
+    - No longer breaks hardlinks (Closes: #759497)
+  * Force pagesize for no-rpath-prebuild test: We know the page size,
+    and it may be different from system one
 
- -- Felipe Sateler <fsateler@debian.org>  Mon, 29 Feb 2016 16:56:54 -0300
+ -- Felipe Sateler <fsateler@debian.org>  Mon, 29 Feb 2016 17:32:24 -0300
 
 patchelf (0.8-4) unstable; urgency=medium
 
