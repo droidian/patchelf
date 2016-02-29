@@ -1,3 +1,9 @@
+patchelf (0.9-1) UNRELEASED; urgency=medium
+
+  * New upstream release
+
+ -- Felipe Sateler <fsateler@debian.org>  Mon, 29 Feb 2016 16:56:54 -0300
+
 patchelf (0.8-4) unstable; urgency=medium
 
   * Disable no-rpath.sh test, as it may fail when the binary is of foreign
