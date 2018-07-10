@@ -1,3 +1,17 @@
+patchelf (0.9+52.20180509-1) UNRELEASED; urgency=medium
+
+  * Package an upstream git snapshot
+    - Makes some binaries strippable after patching (Closes: #903396)
+  * no-rpath-prebuild: force pagesize to 4096 on prebuilt binaries.
+    They all have that page size, and the host-detected one might be
+    different.
+  * Update watchfile
+    - Use format version 4
+    - Use github as source page
+  * Migrate to salsa for hosting
+
+ -- Felipe Sateler <fsateler@debian.org>  Tue, 10 Jul 2018 10:33:41 -0400
+
 patchelf (0.9-1) unstable; urgency=medium
 
   * New upstream release
