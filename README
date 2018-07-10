@@ -1,4 +1,4 @@
-PatchELF is a simple utility for modifing existing ELF executables and
+PatchELF is a simple utility for modifying existing ELF executables and
 libraries.  In particular, it can do the following:
 
 * Change the dynamic loader ("ELF interpreter") of executables:
@@ -19,6 +19,14 @@ libraries.  In particular, it can do the following:
   an RPATH "/lib:/usr/lib:/foo/lib", and libfoo.so can only be found
   in /foo/lib, then the new RPATH will be "/foo/lib".
 
+  In addition, the '--allowed-rpath-prefixes' option can be used for
+  further rpath tuning. For instance, if an executable has an RPATH
+  "/tmp/build-foo/.libs:/foo/lib", it is probably desirable to keep
+  the "/foo/lib" reference instead of the "/tmp" entry. To accomplish
+  that, use:
+
+  $ patchelf --shrink-rpath --allowed-rpath-prefixes /usr/lib:/foo/lib my-program
+
 * Remove declared dependencies on dynamic libraries (DT_NEEDED
   entries):
 
@@ -38,6 +46,20 @@ libraries.  In particular, it can do the following:
   $ patchelf --replace-needed liboriginal.so.1 libreplacement.so.1 my-program
 
   This option can be give multiple times.
+
+* Change SONAME of a dynamic library:
+
+  $ patchelf --set-soname libnewname.so.3.4.5 path/to/libmylibrary.so.1.2.3
+  
+
+INSTALLING
+
+You can download a pre-compiled binary from the releases or compile it by yourself:
+
+  ./bootstrap.sh
+  ./configure
+  make
+  sudo make install
 
 
 AUTHOR
