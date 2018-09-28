@@ -1,4 +1,4 @@
-patchelf (0.9+52.20180509-1) UNRELEASED; urgency=medium
+patchelf (0.9+52.20180509-1) unstable; urgency=medium
 
   [ Felipe Sateler ]
   * Package an upstream git snapshot
@@ -10,12 +10,16 @@ patchelf (0.9+52.20180509-1) UNRELEASED; urgency=medium
     - Use format version 4
     - Use github as source page
   * Migrate to salsa for hosting
+  * Bump debhelper compat to 11.
+    Also switch to the debhelper-compat virtual package
+  * Bump Standards-Version
+  * Enable hardening flags
 
   [ Drew Parsons ]
   * add new patch adjust_startPage_issue127_commit1cc234fea.patch from
     upstream Issue #127. Fixes build-time tests.
 
- -- Felipe Sateler <fsateler@debian.org>  Tue, 10 Jul 2018 10:33:41 -0400
+ -- Felipe Sateler <fsateler@debian.org>  Fri, 28 Sep 2018 17:20:09 -0300
 
 patchelf (0.9-1) unstable; urgency=medium
 
