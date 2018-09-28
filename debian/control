@@ -2,7 +2,7 @@ Source: patchelf
 Section: utils
 Priority: optional
 Maintainer: Felipe Sateler <fsateler@debian.org>
-Build-Depends: debhelper (>= 9.0.0), dh-autoreconf
+Build-Depends: debhelper-compat (= 11)
 Standards-Version: 3.9.7
 Homepage: http://nixos.org/patchelf.html
 Vcs-Git: https://salsa.debian.org/debian/patchelf.git
