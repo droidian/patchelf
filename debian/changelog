@@ -1,5 +1,6 @@
 patchelf (0.9+52.20180509-1) UNRELEASED; urgency=medium
 
+  [ Felipe Sateler ]
   * Package an upstream git snapshot
     - Makes some binaries strippable after patching (Closes: #903396)
   * no-rpath-prebuild: force pagesize to 4096 on prebuilt binaries.
@@ -9,6 +10,10 @@ patchelf (0.9+52.20180509-1) UNRELEASED; urgency=medium
     - Use format version 4
     - Use github as source page
   * Migrate to salsa for hosting
+
+  [ Drew Parsons ]
+  * add new patch adjust_startPage_issue127_commit1cc234fea.patch from
+    upstream Issue #127. Fixes build-time tests.
 
  -- Felipe Sateler <fsateler@debian.org>  Tue, 10 Jul 2018 10:33:41 -0400
 
