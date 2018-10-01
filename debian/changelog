@@ -1,3 +1,9 @@
+patchelf (0.9+52.20180509-2) UNRELEASED; urgency=medium
+
+  * d/copyright: Use https protocol in Format field
+
+ -- Ondřej Nový <onovy@debian.org>  Mon, 01 Oct 2018 10:45:11 +0200
+
 patchelf (0.9+52.20180509-1) unstable; urgency=medium
 
   [ Felipe Sateler ]
