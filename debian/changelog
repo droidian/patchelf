@@ -1,9 +1,15 @@
-patchelf (0.10-1) UNRELEASED; urgency=medium
+patchelf (0.10-1) experimental; urgency=medium
 
   [ Ondřej Nový ]
   * d/copyright: Use https protocol in Format field
 
- -- Felipe Sateler <fsateler@debian.org>  Thu, 18 Apr 2019 20:00:06 -0400
+  [ Felipe Sateler ]
+  * New upstream version
+    - Refresh patches
+  * Bump Standards-Version (no changes needed)
+  * Release to experimental due to freeze
+
+ -- Felipe Sateler <fsateler@debian.org>  Thu, 18 Apr 2019 20:13:49 -0400
 
 patchelf (0.9+52.20180509-1) unstable; urgency=medium
 
