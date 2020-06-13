@@ -4,6 +4,7 @@ patchelf (0.10-3) UNRELEASED; urgency=medium
   * Set upstream metadata fields: Bug-Submit.
   * Remove obsolete fields Contact, Name from debian/upstream/metadata
     (already present in machine-readable debian/copyright).
+  * Update standards version to 4.5.0, no changes needed.
 
  -- Felipe Sateler <fsateler@debian.org>  Sat, 13 Jun 2020 13:18:44 -0400
 
