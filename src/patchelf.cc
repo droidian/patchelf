@@ -46,6 +46,8 @@ static bool debugMode = false;
 static bool forceRPath = false;
 
 static std::vector<std::string> fileNames;
+static std::string outputFileName;
+static bool alwaysWrite = false;
 static int pageSize = PAGESIZE;
 
 typedef std::shared_ptr<std::vector<unsigned char>> FileContents;
@@ -497,7 +499,9 @@ void ElfFile<ElfFileParamNames>::sortShdrs()
 
 static void writeFile(std::string fileName, FileContents contents)
 {
-    int fd = open(fileName.c_str(), O_TRUNC | O_WRONLY);
+    debug("writing %s\n", fileName.c_str());
+
+    int fd = open(fileName.c_str(), O_CREAT | O_TRUNC | O_WRONLY, 0777);
     if (fd == -1)
         error("open");
 
@@ -742,14 +746,13 @@ void ElfFile<ElfFileParamNames>::rewriteSectionsLibrary()
        since DYN executables tend to start at virtual address 0, so
        rewriteSectionsExecutable() won't work because it doesn't have
        any virtual address space to grow downwards into. */
-    if (isExecutable) {
-        if (startOffset >= startPage) {
-            debug("shifting new PT_LOAD segment by %d bytes to work around a Linux kernel bug\n", startOffset - startPage);
-        }
+    if (isExecutable && startOffset > startPage) {
+        debug("shifting new PT_LOAD segment by %d bytes to work around a Linux kernel bug\n", startOffset - startPage);
         startPage = startOffset;
     }
 
     /* Add a segment that maps the replaced sections into memory. */
+    wri(hdr->e_phoff, sizeof(Elf_Ehdr));
     phdrs.resize(rdi(hdr->e_phnum) + 1);
     wri(hdr->e_phnum, rdi(hdr->e_phnum) + 1);
     Elf_Phdr & phdr = phdrs[rdi(hdr->e_phnum) - 1];
@@ -1074,13 +1077,6 @@ void ElfFile<ElfFileParamNames>::modifySoname(sonameMode op, const std::string &
         return;
     }
 
-    /* Zero out the previous SONAME */
-    unsigned int sonameSize = 0;
-    if (soname) {
-        sonameSize = strlen(soname);
-        memset(soname, 'X', sonameSize);
-    }
-
     debug("new SONAME is '%s'\n", newSoname.c_str());
 
     /* Grow the .dynstr section to make room for the new SONAME. */
@@ -1255,7 +1251,17 @@ void ElfFile<ElfFileParamNames>::modifyRPath(RPathOp op,
     }
 
 
-    if (std::string(rpath ? rpath : "") == newRPath) return;
+    if (!forceRPath && dynRPath && !dynRunPath) { /* convert DT_RPATH to DT_RUNPATH */
+        dynRPath->d_tag = DT_RUNPATH;
+        dynRunPath = dynRPath;
+        dynRPath = 0;
+    } else if (forceRPath && dynRunPath) { /* convert DT_RUNPATH to DT_RPATH */
+        dynRunPath->d_tag = DT_RPATH;
+        dynRPath = dynRunPath;
+        dynRunPath = 0;
+    } else if (std::string(rpath ? rpath : "") == newRPath) {
+        return;
+    }
 
     changed = true;
 
@@ -1269,15 +1275,6 @@ void ElfFile<ElfFileParamNames>::modifyRPath(RPathOp op,
 
     debug("new rpath is '%s'\n", newRPath.c_str());
 
-    if (!forceRPath && dynRPath && !dynRunPath) { /* convert DT_RPATH to DT_RUNPATH */
-        dynRPath->d_tag = DT_RUNPATH;
-        dynRunPath = dynRPath;
-        dynRPath = 0;
-    }
-
-    if (forceRPath && dynRPath && dynRunPath) { /* convert DT_RUNPATH to DT_RPATH */
-        dynRunPath->d_tag = DT_IGNORE;
-    }
 
     if (newRPath.size() <= rpathSize) {
         strcpy(rpath, newRPath.c_str());
@@ -1567,7 +1564,7 @@ static bool printNeeded = false;
 static bool noDefaultLib = false;
 
 template<class ElfFile>
-static void patchElf2(ElfFile && elfFile, std::string fileName)
+static void patchElf2(ElfFile && elfFile, const FileContents & fileContents, std::string fileName)
 {
     if (printInterpreter)
         printf("%s\n", elfFile.getInterpreter().c_str());
@@ -1603,6 +1600,9 @@ static void patchElf2(ElfFile && elfFile, std::string fileName)
     if (elfFile.isChanged()){
         elfFile.rewriteSections();
         writeFile(fileName, elfFile.fileContents);
+    } else if (alwaysWrite) {
+        debug("not modified, but alwaysWrite=true\n");
+        writeFile(fileName, fileContents);
     }
 }
 
@@ -1616,11 +1616,12 @@ static void patchElf()
         debug("Kernel page size is %u bytes\n", getPageSize());
 
         auto fileContents = readFile(fileName);
+        std::string outputFileName2 = outputFileName.empty() ? fileName : outputFileName;
 
         if (getElfType(fileContents).is32Bit)
-            patchElf2(ElfFile<Elf32_Ehdr, Elf32_Phdr, Elf32_Shdr, Elf32_Addr, Elf32_Off, Elf32_Dyn, Elf32_Sym, Elf32_Verneed>(fileContents), fileName);
+            patchElf2(ElfFile<Elf32_Ehdr, Elf32_Phdr, Elf32_Shdr, Elf32_Addr, Elf32_Off, Elf32_Dyn, Elf32_Sym, Elf32_Verneed>(fileContents), fileContents, outputFileName2);
         else
-            patchElf2(ElfFile<Elf64_Ehdr, Elf64_Phdr, Elf64_Shdr, Elf64_Addr, Elf64_Off, Elf64_Dyn, Elf64_Sym, Elf64_Verneed>(fileContents), fileName);
+            patchElf2(ElfFile<Elf64_Ehdr, Elf64_Phdr, Elf64_Shdr, Elf64_Addr, Elf64_Off, Elf64_Dyn, Elf64_Sym, Elf64_Verneed>(fileContents), fileContents, outputFileName2);
     }
 }
 
@@ -1644,9 +1645,10 @@ void showHelp(const std::string & progName)
   [--replace-needed LIBRARY NEW_LIBRARY]\n\
   [--print-needed]\n\
   [--no-default-lib]\n\
+  [--output FILE]\n\
   [--debug]\n\
   [--version]\n\
-  FILENAME\n", progName.c_str());
+  FILENAME...\n", progName.c_str());
 }
 
 
@@ -1730,6 +1732,11 @@ int mainWrapped(int argc, char * * argv)
             neededLibsToReplace[ argv[i+1] ] = argv[i+2];
             i += 2;
         }
+        else if (arg == "--output") {
+            if (++i == argc) error("missing argument");
+            outputFileName = argv[i];
+            alwaysWrite = true;
+        }
         else if (arg == "--debug") {
             debugMode = true;
         }
@@ -1750,6 +1757,9 @@ int mainWrapped(int argc, char * * argv)
     }
 
     if (fileNames.empty()) error("missing filename");
+
+    if (!outputFileName.empty() && fileNames.size() != 1)
+        error("--output option only allowed with single input file");
 
     patchElf();
 
