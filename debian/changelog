@@ -1,4 +1,4 @@
-patchelf (0.11-1) UNRELEASED; urgency=medium
+patchelf (0.11-1) unstable; urgency=medium
 
   * New upstream version 0.11
     - More modern C++ has avoided a memory leak (Closes: #816468)
@@ -8,8 +8,12 @@ patchelf (0.11-1) UNRELEASED; urgency=medium
   * Remove obsolete fields Contact, Name from debian/upstream/metadata
     (already present in machine-readable debian/copyright).
   * Update standards version to 4.5.0, no changes needed.
+  * Drop patches picked from upstream
+  * Fix set-rpath corrupting binaries on mips.
+    Pick a couple of proposed upstream patches to address the mips set-rpath failures.
+    (Closes: #821435)
 
- -- Felipe Sateler <fsateler@debian.org>  Sat, 13 Jun 2020 13:23:19 -0400
+ -- Felipe Sateler <fsateler@debian.org>  Sat, 13 Jun 2020 14:41:30 -0400
 
 patchelf (0.10-2) unstable; urgency=medium
 
