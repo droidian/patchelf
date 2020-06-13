@@ -1,6 +1,7 @@
 patchelf (0.10-3) UNRELEASED; urgency=medium
 
   * Set field Upstream-Contact in debian/copyright.
+  * Set upstream metadata fields: Bug-Submit.
 
  -- Felipe Sateler <fsateler@debian.org>  Sat, 13 Jun 2020 13:18:44 -0400
 
