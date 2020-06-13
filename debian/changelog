@@ -1,3 +1,9 @@
+patchelf (0.10-3) UNRELEASED; urgency=medium
+
+  * Set field Upstream-Contact in debian/copyright.
+
+ -- Felipe Sateler <fsateler@debian.org>  Sat, 13 Jun 2020 13:18:44 -0400
+
 patchelf (0.10-2) unstable; urgency=medium
 
   * Use secure URI in Homepage field.

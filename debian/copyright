@@ -1,6 +1,7 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: patchelf
 Source: http://nixos.org/patchelf.html
+Upstream-Contact: https://github.com/NixOS/patchelf/issues
 
 Files: *
 Copyright: 2004-2014 Eelco Dolstra <eelco.dolstra@logicblox.com>
@@ -47,4 +48,3 @@ License: LGPL-2.1+
  .
  On Debian systems, the complete text of the GNU Lesser General
  Public License can be found in "/usr/share/common-licenses/LGPL-2.1".
-
