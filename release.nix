@@ -1,6 +1,7 @@
 { patchelfSrc ? { outPath = ./.; revCount = 1234; shortRev = "abcdef"; }
 , nixpkgs ? builtins.fetchTarball https://github.com/NixOS/nixpkgs-channels/archive/nixos-20.03.tar.gz
 , officialRelease ? false
+, systems ? [ "x86_64-linux" "i686-linux" "aarch64-linux" ]
 }:
 
 let
@@ -20,7 +21,7 @@ let
                     ((if patchelfSrc ? lastModifiedDate
                       then builtins.substring 0 8 patchelfSrc.lastModifiedDate
                       else toString patchelfSrc.revCount or 0)
-                    + "." + patchelfSrc.shortRev));
+                    + "." + (patchelfSrc.shortRev or "")));
         versionSuffix = ""; # obsolete
         src = patchelfSrc;
         preAutoconf = "echo ${version} > version";
@@ -39,7 +40,7 @@ let
       };
 
 
-    build = pkgs.lib.genAttrs [ "x86_64-linux" "i686-linux" "aarch64-linux" /* "x86_64-freebsd" "i686-freebsd"  "x86_64-darwin" "i686-solaris" "i686-cygwin" */ ] (system:
+    build = pkgs.lib.genAttrs systems (system:
 
       with import nixpkgs { inherit system; };
 
