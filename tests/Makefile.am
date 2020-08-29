@@ -23,7 +23,9 @@ src_TESTS = \
   set-interpreter-long.sh set-rpath.sh no-rpath.sh big-dynstr.sh \
   set-rpath-library.sh soname.sh shrink-rpath-with-allowed-prefixes.sh \
   force-rpath.sh \
-  output-flag.sh
+  plain-needed.sh \
+  output-flag.sh \
+  build-id.sh
 
 build_TESTS = \
   $(no_rpath_arch_TESTS)
@@ -75,7 +77,10 @@ big_dynstr_LDFLAGS = $(LDFLAGS_local)
 # - without libtool, only archives (static libraries) can be built by automake
 # - with libtool, it is difficult to control options
 # - with libtool, it is not possible to compile convenience *dynamic* libraries :-(
-check_PROGRAMS += libfoo.so libfoo-scoped.so libbar.so libbar-scoped.so libsimple.so
+check_PROGRAMS += libfoo.so libfoo-scoped.so libbar.so libbar-scoped.so libsimple.so libbuildid.so
+
+libbuildid_so_SOURCES = simple.c
+libbuildid_so_LDFLAGS = $(LDFLAGS_sharedlib) -Wl,-build-id
 
 libfoo_so_SOURCES = foo.c
 libfoo_so_LDADD = -lbar $(AM_LDADD)
