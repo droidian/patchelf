@@ -1,3 +1,11 @@
+patchelf (0.13-1) UNRELEASED; urgency=medium
+
+  * New upstream release
+    - Update MIPS fix patch with what was merged upstream.
+      It didn't make 0.13, but it will be there for 0.14
+
+ -- Felipe Sateler <fsateler@debian.org>  Tue, 24 Aug 2021 20:17:47 -0400
+
 patchelf (0.12-1) unstable; urgency=medium
 
   * New upstream version
