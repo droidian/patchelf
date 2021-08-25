@@ -8,7 +8,7 @@ RPATH added that way.
 
 The problem was around the MIPS-specific mechanism of setting up the
 debug map pointer. When DT_MIPS_RLD_MAP_REL entry in the dynamic section
-is not zero, it holds the relative address of __RLD_MAP -- an offset
+is present, it holds the relative address of __RLD_MAP -- an offset
 relative to this dynamic section entry. Dynamic linker puts the
 pointer to the `r_debug` structure there.
 
@@ -20,23 +20,31 @@ valid anymore and should be updated.
 
 This commit adds the necessary update.
 
+In the corner case when DT_MIPS_RLD_MAP_REL is present, but
+.rld_map section is not, the dynamic loader writes the debug
+pointer to some arbitrary bytes in memory. To avoid crushes
+on otherwise "working" binaries, we set offset to zero
+so that the dynamic loader would just overwrite the dynamic
+section.
+
 Here we also import DT_MIPS_RLD_MAP_REL definition in elf.h form
 glibc commit a2057c984e4314c3740f04cf54e36c824e4c8f32.
 
 Refs: #82
 Signed-off-by: Ivan A. Melnikov <iv@altlinux.org>
-
-DT_MIPS_RLD_MAP_REL
 ---
- src/elf.h       |  6 +++++-
- src/patchelf.cc | 12 ++++++++++--
- 2 files changed, 15 insertions(+), 3 deletions(-)
+ src/elf.h                  |  6 +++++-
+ src/patchelf.cc            | 21 +++++++++++++++++++--
+ tests/Makefile.am          |  1 +
+ tests/set-rpath-rel-map.sh | 37 +++++++++++++++++++++++++++++++++++++
+ 4 files changed, 62 insertions(+), 3 deletions(-)
+ create mode 100755 tests/set-rpath-rel-map.sh
 
 diff --git a/src/elf.h b/src/elf.h
-index 87cb141..e4e167c 100644
+index 576990d..ae1524a 100644
 --- a/src/elf.h
 +++ b/src/elf.h
-@@ -1640,7 +1640,11 @@ typedef struct
+@@ -1642,7 +1642,11 @@ typedef struct
     PLT is writable.  For a non-writable PLT, this is omitted or has a zero
     value.  */
  #define DT_MIPS_RWPLT        0x70000034
@@ -45,38 +53,102 @@ index 87cb141..e4e167c 100644
 +   in a PIE as it stores a relative offset from the address of the tag
 +   rather than an absolute address.  */
 +#define DT_MIPS_RLD_MAP_REL  0x70000035
-+#define DT_MIPS_NUM         0x36
++#define DT_MIPS_NUM          0x36
  
  /* Legal values for DT_MIPS_FLAGS Elf32_Dyn entry.  */
  
 diff --git a/src/patchelf.cc b/src/patchelf.cc
-index 05ec793..18e1f83 100644
+index fd1e7b7..d713728 100644
 --- a/src/patchelf.cc
 +++ b/src/patchelf.cc
-@@ -1078,9 +1078,9 @@ void ElfFile<ElfFileParamNames>::rewriteHeaders(Elf_Addr phdrAddress)
+@@ -1089,9 +1089,9 @@ void ElfFile<ElfFileParamNames>::rewriteHeaders(Elf_Addr phdrAddress)
         (e.g., those produced by klibc's klcc). */
      auto shdrDynamic = findSection2(".dynamic");
      if (shdrDynamic) {
--        Elf_Dyn * dyn = (Elf_Dyn *) (contents + rdi(shdrDynamic->sh_offset));
-+        Elf_Dyn * dyn_table = (Elf_Dyn *) (contents + rdi(shdrDynamic->sh_offset));
+-        auto dyn = (Elf_Dyn *)(contents + rdi(shdrDynamic->sh_offset));
++        auto dyn_table = (Elf_Dyn *) (contents + rdi(shdrDynamic->sh_offset));
          unsigned int d_tag;
 -        for ( ; (d_tag = rdi(dyn->d_tag)) != DT_NULL; dyn++)
-+        for (Elf_Dyn * dyn = dyn_table; (d_tag = rdi(dyn->d_tag)) != DT_NULL; dyn++)
++        for (auto dyn = dyn_table; (d_tag = rdi(dyn->d_tag)) != DT_NULL; dyn++)
              if (d_tag == DT_STRTAB)
                  dyn->d_un.d_ptr = findSection(".dynstr").sh_addr;
              else if (d_tag == DT_STRSZ)
-@@ -1119,6 +1119,14 @@ void ElfFile<ElfFileParamNames>::rewriteHeaders(Elf_Addr phdrAddress)
+@@ -1130,6 +1130,23 @@ void ElfFile<ElfFileParamNames>::rewriteHeaders(Elf_Addr phdrAddress)
                  dyn->d_un.d_ptr = findSection(".gnu.version_r").sh_addr;
              else if (d_tag == DT_VERSYM)
                  dyn->d_un.d_ptr = findSection(".gnu.version").sh_addr;
 +            else if (d_tag == DT_MIPS_RLD_MAP_REL) {
 +                /* the MIPS_RLD_MAP_REL tag stores the offset to the debug
 +                   pointer, relative to the address of the tag */
-+                debug("Updating DT_MIPS_RLD_MAP_REL");
-+                Elf_Addr rtld_map_addr = findSection(".rld_map").sh_addr;
-+                auto dyn_offset = ((char*)dyn) - ((char*)dyn_table);
-+                dyn->d_un.d_ptr = rtld_map_addr + dyn_offset - shdrDynamic->sh_addr;
++                auto shdr = findSection2(".rld_map");
++                if (shdr) {
++                    auto rld_map_addr = findSection(".rld_map").sh_addr;
++                    auto dyn_offset = ((char*)dyn) - ((char*)dyn_table);
++                    dyn->d_un.d_ptr = rld_map_addr + dyn_offset - shdrDynamic->sh_addr;
++                } else {
++                    /* ELF file with DT_MIPS_RLD_MAP_REL but without .rld_map
++                       is broken, and it's not our job to fix it; yet, we have
++                       to find some location for dynamic loader to write the
++                       debug pointer to; well, let's write it right here */
++                    fprintf(stderr, "warning: DT_MIPS_RLD_MAP_REL entry is present, but .rld_map section is not\n");
++                    dyn->d_un.d_ptr = 0;
++                }
 +            }
      }
  
  
+diff --git a/tests/Makefile.am b/tests/Makefile.am
+index f8176e0..3e6b356 100644
+--- a/tests/Makefile.am
++++ b/tests/Makefile.am
+@@ -22,6 +22,7 @@ src_TESTS = \
+   plain-fail.sh plain-run.sh shrink-rpath.sh set-interpreter-short.sh \
+   set-interpreter-long.sh set-rpath.sh add-rpath.sh no-rpath.sh big-dynstr.sh \
+   set-rpath-library.sh soname.sh shrink-rpath-with-allowed-prefixes.sh \
++  set-rpath-rel-map.sh \
+   force-rpath.sh \
+   plain-needed.sh \
+   output-flag.sh \
+diff --git a/tests/set-rpath-rel-map.sh b/tests/set-rpath-rel-map.sh
+new file mode 100755
+index 0000000..efc0943
+--- /dev/null
++++ b/tests/set-rpath-rel-map.sh
+@@ -0,0 +1,37 @@
++#! /bin/sh -e
++
++if ! objdump -p main | grep -q MIPS_RLD_MAP_REL; then
++    echo "No MIPS_RLD_MAP_REL dynamic section entry, skipping"
++    exit 0
++fi
++
++SCRATCH=scratch/$(basename $0 .sh)
++
++rm -rf ${SCRATCH}
++mkdir -p ${SCRATCH}
++mkdir -p ${SCRATCH}/libsA
++mkdir -p ${SCRATCH}/libsB
++
++cp main ${SCRATCH}/
++cp libfoo.so ${SCRATCH}/libsA/
++cp libbar.so ${SCRATCH}/libsB/
++
++# break the main executable by removing .rld_map section
++objcopy --remove-section .rld_map ${SCRATCH}/main
++
++oldRPath=$(../src/patchelf --print-rpath ${SCRATCH}/main)
++if test -z "$oldRPath"; then oldRPath="/oops"; fi
++../src/patchelf --force-rpath --set-rpath $oldRPath:$(pwd)/${SCRATCH}/libsA:$(pwd)/${SCRATCH}/libsB ${SCRATCH}/main
++
++if test "$(uname)" = FreeBSD; then
++    export LD_LIBRARY_PATH=$(pwd)/${SCRATCH}/libsB
++fi
++
++exitCode=0
++
++(cd ${SCRATCH} && ./main) || exitCode=$?
++
++if test "$exitCode" != 46; then
++    echo "bad exit code!"
++    exit 1
++fi
