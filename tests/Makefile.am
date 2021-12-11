@@ -1,6 +1,6 @@
 LIBS =
 
-check_PROGRAMS = simple main main-scoped big-dynstr no-rpath contiguous_note_sections
+check_PROGRAMS = simple-pie simple main too-many-strtab main-scoped big-dynstr no-rpath contiguous-note-sections
 
 no_rpath_arch_TESTS = \
   no-rpath-amd64.sh \
@@ -22,14 +22,24 @@ src_TESTS = \
   plain-fail.sh plain-run.sh shrink-rpath.sh set-interpreter-short.sh \
   set-interpreter-long.sh set-rpath.sh add-rpath.sh no-rpath.sh big-dynstr.sh \
   set-rpath-library.sh soname.sh shrink-rpath-with-allowed-prefixes.sh \
+  set-rpath-rel-map.sh \
   force-rpath.sh \
   plain-needed.sh \
   output-flag.sh \
+  too-many-strtab.sh \
   no-rpath-pie-powerpc.sh \
   build-id.sh \
   invalid-elf.sh \
   endianness.sh \
-  contiguous_note_sections.sh
+  contiguous-note-sections.sh \
+  no-gnu-hash.sh \
+  grow-file.sh \
+  no-dynamic-section.sh \
+  args-from-file.sh \
+  basic-flags.sh \
+  set-empty-rpath.sh \
+  phdr-corruption.sh \
+  replace-needed.sh
 
 build_TESTS = \
   $(no_rpath_arch_TESTS)
@@ -58,6 +68,9 @@ simple_SOURCES = simple.c
 # no -fpic for simple.o
 simple_CFLAGS =
 
+simple_pie_SOURCES = simple.c
+simple_pie_CFLAGS = -fPIC -pie
+
 main_SOURCES = main.c
 main_LDADD = -lfoo $(AM_LDADD)
 main_DEPENDENCIES = libfoo.so
@@ -70,18 +83,29 @@ main_scoped_LDFLAGS = $(LDFLAGS_local)
 
 big-dynstr.c: main.c
 	cat $< > big-dynstr.c
-	for i in $$(seq 1 2000); do echo "void f$$i(void) { };" >> big-dynstr.c; done
+	for i in $$(seq 1 2000); do echo "void f$$i(void) { };"; done >> big-dynstr.c
 
 nodist_big_dynstr_SOURCES = big-dynstr.c
 big_dynstr_LDADD = -lfoo $(AM_LDADD)
 big_dynstr_DEPENDENCIES = libfoo.so
 big_dynstr_LDFLAGS = $(LDFLAGS_local)
 
+# somehow bug does not trigger if we use
+# normal autotools rules to build the program:
+# https://github.com/NixOS/patchelf/pull/303
+libbig-dynstr.so: big-dynstr.c
+	$(CC) -fPIC -shared -o $@ $<
+libbig-dynstr.debug: libbig-dynstr.so
+	$(STRIP) --only-keep-debug libbig-dynstr.so -o libbig-dynstr.debug
+check_DATA = libbig-dynstr.debug
+
+
 # declare local shared libraries as programs as:
 # - without libtool, only archives (static libraries) can be built by automake
 # - with libtool, it is difficult to control options
 # - with libtool, it is not possible to compile convenience *dynamic* libraries :-(
-check_PROGRAMS += libfoo.so libfoo-scoped.so libbar.so libbar-scoped.so libsimple.so libbuildid.so
+check_PROGRAMS += libfoo.so libfoo-scoped.so libbar.so libbar-scoped.so libsimple.so libbuildid.so libtoomanystrtab.so \
+                  phdr-corruption.so
 
 libbuildid_so_SOURCES = simple.c
 libbuildid_so_LDFLAGS = $(LDFLAGS_sharedlib) -Wl,-build-id
@@ -105,10 +129,17 @@ libbar_scoped_so_LDFLAGS = $(LDFLAGS_sharedlib)
 libsimple_so_SOURCES = simple.c
 libsimple_so_LDFLAGS = $(LDFLAGS_sharedlib)
 
+libtoomanystrtab_so_SOURCES = too-many-strtab.c
+libtoomanystrtab_so_LDFLAGS = $(LDFLAGS_sharedlib)
+
 no_rpath_SOURCES = no-rpath.c
 # no -fpic for no-rpath.o
 no_rpath_CFLAGS =
 
-contiguous_note_sections_SOURCES = contiguous_note_sections.s contiguous_note_sections.ld
-contiguous_note_sections_LDFLAGS = -nostdlib -T contiguous_note_sections.ld
+contiguous_note_sections_SOURCES = contiguous-note-sections.s contiguous-note-sections.ld
+contiguous_note_sections_LDFLAGS = -nostdlib -T contiguous-note-sections.ld
 contiguous_note_sections_CFLAGS = -pie
+
+phdr_corruption_so_SOURCES = void.c phdr-corruption.ld
+phdr_corruption_so_LDFLAGS = -nostdlib -shared -Wl,-Tphdr-corruption.ld
+phdr_corruption_so_CFLAGS =
