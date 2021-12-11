@@ -4,6 +4,8 @@ AC_CONFIG_SRCDIR([src/patchelf.cc])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.11.1 -Wall -Werror dist-bzip2 foreign color-tests parallel-tests])
 
+AC_CHECK_TOOL([STRIP], [strip])
+
 AM_PROG_CC_C_O
 AC_PROG_CXX
 AM_PROG_AS
@@ -20,9 +22,14 @@ if test "$DEFAULT_PAGESIZE" != auto; then
 fi
 
 AC_ARG_WITH([asan],
-   AS_HELP_STRING([--with-asan], [Link with libasan])
+   AS_HELP_STRING([--with-asan], [Build with address sanitizer])
 )
 AM_CONDITIONAL([WITH_ASAN], [test x"$with_asan" = xyes])
+
+AC_ARG_WITH([ubsan],
+   AS_HELP_STRING([--with-ubsan], [Build with undefined behavior sanitizer])
+)
+AM_CONDITIONAL([WITH_UBSAN], [test x"$with_ubsan" = xyes])
 
 AC_CONFIG_FILES([Makefile src/Makefile tests/Makefile patchelf.spec])
 AC_OUTPUT

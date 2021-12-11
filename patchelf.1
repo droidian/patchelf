@@ -23,6 +23,9 @@ of executables and change the RPATH of executables and libraries.
 
 The single option given operates on each FILE, editing in place.
 
+Any option taking a string argument can also take a file by prefixing the
+argument with the @ symbol. See EXAMPLES
+
 .IP "--page-size SIZE"
 Uses the given page size instead of the default.
 
@@ -40,17 +43,17 @@ Raises an error if DT_SONAME doesn't exist.
 .IP "--set-soname SONAME"
 Sets DT_SONAME entry of a library to SONAME.
 
-.IP "--set-rpath RPATH"
-Change the RPATH of the executable or library to RPATH.
+.IP "--set-rpath RUNPATH"
+Change the DT_RUNPATH of the executable or library to RUNPATH.
 
-.IP "--add-rpath RPATH"
-Add RPATH to the existing RPATH of the executable or library.
+.IP "--add-rpath RUNPATH"
+Add RUNPATH to the existing DT_RUNPATH of the executable or library.
 
 .IP --remove-rpath
 Removes the DT_RPATH or DT_RUNPATH entry of the executable or library.
 
 .IP --shrink-rpath
-Remove from the RPATH all directories that do not contain a
+Remove from the DT_RUNPATH or DT_RPATH all directories that do not contain a
 library referenced by DT_NEEDED fields of the executable or library.
 
 For instance, if an executable references one library libfoo.so, has
@@ -64,7 +67,7 @@ further rpath tuning. For instance, if an executable has an RPATH
 the "/foo/lib" reference instead of the "/tmp" entry.
 
 .IP --print-rpath
-Prints the RPATH for an executable or library.
+Prints the DT_RUNPATH or DT_RPATH for an executable or library.
 
 .IP --force-rpath
 Forces the use of the obsolete DT_RPATH in the file instead of
@@ -72,18 +75,18 @@ DT_RUNPATH. By default DT_RPATH is converted to DT_RUNPATH.
 
 .IP "--add-needed LIBRARY"
 Adds a declared dependency on a dynamic library (DT_NEEDED).
-This option can be give multiple times.
+This option can be given multiple times.
 
 .IP "--replace-needed LIB_ORIG LIB_NEW"
 Replaces a declared dependency on a dynamic library with another one (DT_NEEDED).
-This option can be give multiple times.
+This option can be given multiple times.
 
 .IP "--remove-needed LIBRARY"
 Removes a declared dependency on LIBRARY (DT_NEEDED entry). This
 option can be given multiple times.
 
 .IP "--no-default-lib"
-Marks the object that the search for dependencies of this object will ignore any
+Marks the object so that the search for dependencies of this object will ignore any
 default library search paths.
 
 .IP "--output FILE"
@@ -94,6 +97,23 @@ Prints details of the changes made to the input file.
 
 .IP --version
 Shows the version of patchelf.
+
+.SH EXAMPLES
+
+To use the contents on an external file as a parameter:
+
+.RS
+$ patchelf a.out --add-rpath @/tmp/generated-rpath.bin
+.RE
+
+To change the RPATH of a binary. Note that
+.BR $ORIGIN
+is a special symbol used by the loader, so must be quoted.
+
+.RS
+patchelf --set-rpath '$ORIGIN/../lib64' a.out
+.RE
+
 
 .SH AUTHOR
 Eelco Dolstra <e.dolstra@tudelft.nl>
