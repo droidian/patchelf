@@ -70,6 +70,7 @@ libraries.  In particular, it can do the following:
 
 ## Compiling and Testing
 
+### Via Autotools
 ```console
 ./bootstrap.sh
 ./configure
@@ -77,6 +78,13 @@ make
 make check
 sudo make install
 ```
+### Via Nix
+
+You can build with Nix in several ways.
+
+1. Building via `nix build` will produce the result in `./result/bin/patchelf`. If you would like to build _patchelf_ with _musl_ try `nix build .#patchelf-musl`
+
+2. You can launch a development environment with `nix develop` and follow the autotools steps above. If you would like to develop with _musl_ try `nix develop .#musl`
 
 ## Author
 
@@ -98,6 +106,18 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ## Release History
+
+0.14.5 (February 21, 2022):
+
+* fix faulty version in 0.14.4
+
+0.14.4 (February 21, 2022):
+
+* Several test fixes to fix patchelf test suite on openbsd by @klemensn
+* Allow multiple modifications in same call by @fzakaria in https://github.com/NixOS/patchelf/pull/361
+* Add support to build with musl by @fzakaria in https://github.com/NixOS/patchelf/pull/362
+* Fix typo: s/folllow/follow/ by @bjornfor in https://github.com/NixOS/patchelf/pull/366
+* mips: fix incorrect polarity on dyn_offset; closes #364 by @a-m-joseph in https://github.com/NixOS/patchelf/pull/365
 
 0.14.3 (December 05, 2021):
 
