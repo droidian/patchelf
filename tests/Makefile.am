@@ -39,7 +39,9 @@ src_TESTS = \
   basic-flags.sh \
   set-empty-rpath.sh \
   phdr-corruption.sh \
-  replace-needed.sh
+  replace-needed.sh \
+  replace-add-needed.sh \
+  add-debug-tag.sh
 
 build_TESTS = \
   $(no_rpath_arch_TESTS)
@@ -83,7 +85,7 @@ main_scoped_LDFLAGS = $(LDFLAGS_local)
 
 big-dynstr.c: main.c
 	cat $< > big-dynstr.c
-	for i in $$(seq 1 2000); do echo "void f$$i(void) { };"; done >> big-dynstr.c
+	i=1; while [ $$i -le 2000 ]; do echo "void f$$i(void) { };"; i=$$(($$i + 1)); done >> big-dynstr.c
 
 nodist_big_dynstr_SOURCES = big-dynstr.c
 big_dynstr_LDADD = -lfoo $(AM_LDADD)
@@ -108,7 +110,7 @@ check_PROGRAMS += libfoo.so libfoo-scoped.so libbar.so libbar-scoped.so libsimpl
                   phdr-corruption.so
 
 libbuildid_so_SOURCES = simple.c
-libbuildid_so_LDFLAGS = $(LDFLAGS_sharedlib) -Wl,-build-id
+libbuildid_so_LDFLAGS = $(LDFLAGS_sharedlib) -Wl,--build-id
 
 libfoo_so_SOURCES = foo.c
 libfoo_so_LDADD = -lbar $(AM_LDADD)
@@ -129,7 +131,8 @@ libbar_scoped_so_LDFLAGS = $(LDFLAGS_sharedlib)
 libsimple_so_SOURCES = simple.c
 libsimple_so_LDFLAGS = $(LDFLAGS_sharedlib)
 
-libtoomanystrtab_so_SOURCES = too-many-strtab.c
+too_many_strtab_SOURCES = too-many-strtab.c too-many-strtab2.s
+libtoomanystrtab_so_SOURCES = too-many-strtab.c too-many-strtab2.s
 libtoomanystrtab_so_LDFLAGS = $(LDFLAGS_sharedlib)
 
 no_rpath_SOURCES = no-rpath.c
@@ -137,9 +140,9 @@ no_rpath_SOURCES = no-rpath.c
 no_rpath_CFLAGS =
 
 contiguous_note_sections_SOURCES = contiguous-note-sections.s contiguous-note-sections.ld
-contiguous_note_sections_LDFLAGS = -nostdlib -T contiguous-note-sections.ld
+contiguous_note_sections_LDFLAGS = -nostdlib -T $(srcdir)/contiguous-note-sections.ld
 contiguous_note_sections_CFLAGS = -pie
 
 phdr_corruption_so_SOURCES = void.c phdr-corruption.ld
-phdr_corruption_so_LDFLAGS = -nostdlib -shared -Wl,-Tphdr-corruption.ld
+phdr_corruption_so_LDFLAGS = -nostdlib -shared -Wl,-T$(srcdir)/phdr-corruption.ld
 phdr_corruption_so_CFLAGS =
