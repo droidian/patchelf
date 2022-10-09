@@ -37,3 +37,6 @@ Makefile
 .vscode/
 .idea/
 result
+
+# Added by Droidian
+!.circleci/
